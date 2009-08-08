@@ -36,8 +36,25 @@ def Start():
 
 ###################################################################################################
 def MainMenu():
-  dir = MediaContainer()
-  
+	dir = MediaContainer()
+	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
+	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
+	dir.Append(Function(DirectoryItem(today, title="Shows this Day in History",)))
+	dir.Append(Function(DirectoryItem(recent, title="Most Recently Added Shows",)))
+	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
+	dir.Append(Function(DirectotyItem(mostDown, title="Most Downloaded Shows",)))
+	dir.Append(Function(DirectoryItem(lastWeek, title="Most Downloaded Shows Last Week",)))
+	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
+	dir.Append(Function(DirectoryItem(spotlight, title="Spotlight Show",)))
+	return dir
 
-  return dir
+##################################################################################################
+
+
+
+
+
+
+
+
 
