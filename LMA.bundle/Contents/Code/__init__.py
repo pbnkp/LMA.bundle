@@ -21,10 +21,7 @@ from PMS.Objects import *
 from PMS.Shortcuts import *
 
 LMA_PREFIX   = "/music/LMA"
-videoURL       = "http://www.c-spanarchives.org/library/includes/templates/library/flash_popup.php?pID="
-frontURL       = "http://www.c-spanarchives.org/library/index.php?main_page=index"
-searchDate     = "http://www.c-spanarchives.org/library/index.php?main_page=basic_search&sort=date&query="
-searchURL      = "http://www.c-spanarchives.org/library/index.php?main_page=basic_search&query="
+
 CACHE_INTERVAL = 3600
 
 
