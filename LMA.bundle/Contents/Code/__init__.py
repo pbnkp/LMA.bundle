@@ -36,25 +36,58 @@ def Start():
 
 ###################################################################################################
 def MainMenu():
-	dir = MediaContainer()
+	dir = MediaContainer(viewGroup='Details')
 	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
-	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
-	dir.Append(Function(DirectoryItem(today, title="Shows this Day in History",)))
-	dir.Append(Function(DirectoryItem(recent, title="Most Recently Added Shows",)))
-	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
-	dir.Append(Function(DirectotyItem(mostDown, title="Most Downloaded Shows",)))
-	dir.Append(Function(DirectoryItem(lastWeek, title="Most Downloaded Shows Last Week",)))
-	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
-	dir.Append(Function(DirectoryItem(spotlight, title="Spotlight Show",)))
+#	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
+#	dir.Append(Function(DirectoryItem(today, title="Shows this Day in History",)))
+#	dir.Append(Function(DirectoryItem(recent, title="Most Recently Added Shows",)))
+#	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
+#	dir.Append(Function(DirectotyItem(mostDown, title="Most Downloaded Shows",)))
+#	dir.Append(Function(DirectoryItem(lastWeek, title="Most Downloaded Shows Last Week",)))
+#	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
+
+	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
+	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
+	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
+	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
 	return dir
 
 ##################################################################################################
 
 
+def artists(sender):
+	dir = MediaContainer(title2="All Artists")
+	
+	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=titleSorter+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
+	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
+	artists = artistsList.xpath("//str[@name='identifier']/text()")
+	for identifier in artists:
+		Log(identifier)
+	
+	return dir
+
+def showList(sender, identifier):
+	
+	
+	return dir
 
 
 
-
+def concert(sender, page, showName):
+	dir = MediaContainer(title2=showName)
+	page = XML.ElementFromURL("http://www.archive.org" + page, isHTML=True, errors="ignore")
+	artist = str(page.xpath("/html/body/div[3]/a[3]/text()")).strip("[]'")
+	album = str(page.xpath("/html/body/div[5]/div/p[1]/span[6]/text()")).strip("[]'")
+	tracks = page.xpath("//table[@id='ff2']//td[5]/a/@href")
+	if tracks != []:
+		names = page.xpath("//table[@id='ff2']//td[5]/a/parent::*/parent::*/td[1]/text()")
+		for track, name in zip(tracks, names):
+			dir.Append(TrackItem("http://www.archive.org" + track, title=name, artist=artist, album=album))
+	elif tracks == []:
+		Log("bad xpath or no mp3s")	
+	
+	
+	return dir
 
 
 
