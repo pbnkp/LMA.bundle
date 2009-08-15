@@ -28,7 +28,8 @@ CACHE_INTERVAL = 3600
 ###################################################################################################
 def Start():
   Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', '', '')
-  Plugin.AddViewGroup("Details", viewMode="InfoList", mediaType="items")
+  Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
+  Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
   MediaContainer.art = R('')
@@ -36,7 +37,7 @@ def Start():
 
 ###################################################################################################
 def MainMenu():
-	dir = MediaContainer(viewGroup='Details')
+	dir = MediaContainer(viewGroup='InfoList')
 	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
 #	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
 #	dir.Append(Function(DirectoryItem(today, title="Shows this Day in History",)))
@@ -56,19 +57,27 @@ def MainMenu():
 
 
 def artists(sender):
-	dir = MediaContainer(title2="All Artists")
+	dir = MediaContainer(title2="All Artists", viewGroup='List')
 	
 	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=titleSorter+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
 	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
 	artists = artistsList.xpath("//str[@name='identifier']/text()")
 	for identifier in artists:
-		Log(identifier)
-	
+		identifier = str(identifier)
+		dir.Append(Function(DirectoryItem(showList, title=identifier), identifier=identifier, page=1))
 	return dir
 
-def showList(sender, identifier):
-	
-	
+def showList(sender, identifier, page):
+	dir = MediaContainer(title2=identifier, viewGroup='List')
+	showsURL = "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-publicdate&page=" + str(page)
+	showList = XML.ElementFromURL(showsURL, isHTML=True, errors='ignore')
+	if showList != None:
+		showURLs = showList.xpath("//a[@class='titleLink']/@href")
+		showTitles = showList.xpath("//a[@class='titleLink']/text()")
+		for url, title in zip(showURLs, showTitles):
+			dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
+#		page = page + 1
+#		dir.Append(Function(DirectoryItem(showList, title="Next 50 results"), identifier=identifier, page=page))
 	return dir
 
 
@@ -84,7 +93,14 @@ def concert(sender, page, showName):
 		for track, name in zip(tracks, names):
 			dir.Append(TrackItem("http://www.archive.org" + track, title=name, artist=artist, album=album))
 	elif tracks == []:
-		Log("bad xpath or no mp3s")	
+		Log("try again")
+		tracks = page.xpath("//table[@id='ff2']//td[4]/a/@href")
+		if tracks != []:
+			names = page.xpath("//table[@id='ff2']//td[4]/a/parent::*/parent::*/td[1]/text()")
+			for track, name in zip(tracks, names):
+				dir.Append(TrackItem("http://www.archive.org" + track, title=name, artist=artist, album=album))
+		elif tracks == []:
+			Log("still bad")
 	
 	
 	return dir
