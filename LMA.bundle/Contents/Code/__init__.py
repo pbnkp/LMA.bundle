@@ -33,6 +33,8 @@ def Start():
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
   MediaContainer.art = R('')
+  Prefs.Add('lossless', 'bool', 'false', L("Prefer Lossless (FLAC16, SHN)"))
+  Prefs.Add('flac24', 'bool', 'false', L("Prefer FLAC24 if available (needs pretty fast internet connecion)"))
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
@@ -51,7 +53,9 @@ def MainMenu():
 	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
 	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
 	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
-	return dir
+	dir.Append(PrefsItem("Preferences..."))
+#	dir.Append(Function(DirectoryItem(concert, title="test"), page="/details/eo2004-09-19_24bit", showName="test"))
+	return dir	
 
 ##################################################################################################
 
@@ -87,20 +91,48 @@ def concert(sender, page, showName):
 	page = XML.ElementFromURL("http://www.archive.org" + page, isHTML=True, errors="ignore")
 	artist = str(page.xpath("/html/body/div[3]/a[3]/text()")).strip("[]'")
 	album = str(page.xpath("/html/body/div[5]/div/p[1]/span[6]/text()")).strip("[]'")
-	tracks = page.xpath("//table[@id='ff2']//td[5]/a/@href")
-	if tracks != []:
-		names = page.xpath("//table[@id='ff2']//td[5]/a/parent::*/parent::*/td[1]/text()")
-		for track, name in zip(tracks, names):
-			dir.Append(TrackItem("http://www.archive.org" + track, title=name, artist=artist, album=album))
-	elif tracks == []:
-		Log("try again")
-		tracks = page.xpath("//table[@id='ff2']//td[4]/a/@href")
-		if tracks != []:
-			names = page.xpath("//table[@id='ff2']//td[4]/a/parent::*/parent::*/td[1]/text()")
-			for track, name in zip(tracks, names):
-				dir.Append(TrackItem("http://www.archive.org" + track, title=name, artist=artist, album=album))
-		elif tracks == []:
-			Log("still bad")
+	urls = []
+	
+	#get mp3
+	media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='VBR MP3']")
+	if media_type != []:
+		i = len(media_type[0].xpath('preceding-sibling::*')) 
+		urls = page.xpath("//table[@id='ff2']//tr/td[%i]/a/@href" % (i+1))
+		Log("found mp3s")
+	
+	
+	#get flac16, shn
+	if Prefs.Get('lossless') == True:
+		media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='Flac']")
+		Log("looking for Flac")
+		if media_type != []:
+			i = len(media_type[0].xpath('preceding-sibling::*')) 
+			urls = page.xpath("//table[@id='ff2']//tr/td[%i]/a/@href" % (i+1))
+			Log("found Flacs")
+		elif media_type == []:
+			media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='Shorten']")
+			Log("looking for shorten")
+			if media_type != []:
+				i = len(media_type[0].xpath('preceding-sibling::*')) 
+				urls = page.xpath("//table[@id='ff2']//tr/td[%i]/a/@href" % (i+1))
+				Log("found shn")
+
+	#Get FLAC24
+	if Prefs.Get('flac24') == True:
+		media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='24bit Flac']")
+		Log("looking for Flac24")
+		if media_type != []:
+			i = len(media_type[0].xpath('preceding-sibling::*')) 
+			urls = page.xpath("//table[@id='ff2']//tr/td[%i]/a/@href" % (i+1))
+			Log("found Flac24")
+	
+	#get titles
+	titles = page.xpath("//table[@id='ff2']//td[1]/text()")
+	del titles[0]
+	
+	#append tracks
+	for url, title in zip(urls, titles):
+		dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album))
 	
 	
 	return dir
