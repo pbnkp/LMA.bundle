@@ -68,20 +68,26 @@ def artists(sender):
 	artists = artistsList.xpath("//str[@name='identifier']/text()")
 	for identifier in artists:
 		identifier = str(identifier)
-		dir.Append(Function(DirectoryItem(showList, title=identifier), identifier=identifier, page=1))
+		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
+		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, identifier=identifier))
 	return dir
 
-def showList(sender, identifier, page):
+def showList(sender, identifier, pageURL):
 	dir = MediaContainer(title2=identifier, viewGroup='List')
-	showsURL = "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-publicdate&page=" + str(page)
-	showList = XML.ElementFromURL(showsURL, isHTML=True, errors='ignore')
-	if showList != None:
-		showURLs = showList.xpath("//a[@class='titleLink']/@href")
-		showTitles = showList.xpath("//a[@class='titleLink']/text()")
+	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
+	if showsList != None:
+		showURLs = showsList.xpath("//a[@class='titleLink']/@href")
+		showTitles = showsList.xpath("//a[@class='titleLink']/text()")
 		for url, title in zip(showURLs, showTitles):
 			dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
-#		page = page + 1
-#		dir.Append(Function(DirectoryItem(showList, title="Next 50 results"), identifier=identifier, page=page))
+
+	next = showsList.xpath("//a[text()='Next']/@href")
+	if next != []:
+		pageURL = "http://www.archive.org" + next[0]
+		Log(identifier)
+		Log(pageURL)
+		dir.Append(Function(DirectoryItem(showList, title="Next 50 Results"), pageURL=pageURL, identifier=identifier))
+
 	return dir
 
 
