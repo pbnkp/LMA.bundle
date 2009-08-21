@@ -43,7 +43,7 @@ def MainMenu():
 	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
 #	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
 #	dir.Append(Function(DirectoryItem(today, title="Shows this Day in History",)))
-#	dir.Append(Function(DirectoryItem(recent, title="Most Recently Added Shows",)))
+	dir.Append(Function(DirectoryItem(showList, title="Most Recently Added Shows",), title2="Recently Added Shows", pageURL="http://www.archive.org/search.php?query=collection%3Aetree&sort=-%2Fmetadata%2Fpublicdate"))
 #	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
 #	dir.Append(Function(DirectotyItem(mostDown, title="Most Downloaded Shows",)))
 #	dir.Append(Function(DirectoryItem(lastWeek, title="Most Downloaded Shows Last Week",)))
@@ -69,11 +69,11 @@ def artists(sender):
 	for identifier in artists:
 		identifier = str(identifier)
 		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, identifier=identifier))
+		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier))
 	return dir
 
-def showList(sender, identifier, pageURL):
-	dir = MediaContainer(title2=identifier, viewGroup='List')
+def showList(sender, title2, pageURL):
+	dir = MediaContainer(title2=title2, viewGroup='List')
 	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
 	if showsList != None:
 		showURLs = showsList.xpath("//a[@class='titleLink']/@href")
@@ -84,9 +84,7 @@ def showList(sender, identifier, pageURL):
 	next = showsList.xpath("//a[text()='Next']/@href")
 	if next != []:
 		pageURL = "http://www.archive.org" + next[0]
-		Log(identifier)
-		Log(pageURL)
-		dir.Append(Function(DirectoryItem(showList, title="Next 50 Results"), pageURL=pageURL, identifier=identifier))
+		dir.Append(Function(DirectoryItem(showList, title="Next 50 Results"), pageURL=pageURL, title2=title2))
 
 	return dir
 
