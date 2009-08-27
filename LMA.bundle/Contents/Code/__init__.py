@@ -32,7 +32,7 @@ def Start():
   Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
-  MediaContainer.art = R('')
+  MediaContainer.art = ''
   Prefs.Add('lossless', 'bool', 'false', L("Prefer Lossless (FLAC16, SHN)"))
   Prefs.Add('flac24', 'bool', 'false', L("Prefer FLAC24 if available (needs pretty fast internet connecion)"))
   HTTP.SetCacheTime(CACHE_INTERVAL)
@@ -69,22 +69,43 @@ def artists(sender):
 	for identifier in artists:
 		identifier = str(identifier)
 		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier))
+		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
 	return dir
 
-def showList(sender, title2, pageURL):
+def showList(sender, title2, pageURL, isArtistPage=False, identifier=None):
 	dir = MediaContainer(title2=title2, viewGroup='List')
 	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
 	if showsList != None:
+
+			#experiment to auto detect show numbers and split by year if high
+		if isArtistPage == True:
+			numShows = showsList.xpath("//div[3]//tr[2]//td[1]//b[2]//text()")
+			if numShows != []:
+				numShows = int(numShows[0].replace(",",""))
+				Log(numShows)
+				if numShows >= 51:
+					# get the years list
+					yearsPage = XML.ElementFromURL("http://www.archive.org/browse.php?collection=" + identifier + "&field=year", isHTML=True, errors="ignore")
+					years = yearsPage.xpath("//table[@id='browse']//ul//a/text()")
+					yearURLs = yearsPage.xpath("//table[@id='browse']//ul//a/@href")
+					Log(years)
+					Log(yearURLs)
+					for year, url in zip(years, yearURLs):
+						Log(year)
+						Log(url)
+						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url))
+					return dir
+# all this crap need else-ifying
+
 		showURLs = showsList.xpath("//a[@class='titleLink']/@href")
 		showTitles = showsList.xpath("//a[@class='titleLink']/text()")
 		for url, title in zip(showURLs, showTitles):
 			dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
 
-	next = showsList.xpath("//a[text()='Next']/@href")
-	if next != []:
-		pageURL = "http://www.archive.org" + next[0]
-		dir.Append(Function(DirectoryItem(showList, title="Next 50 Results"), pageURL=pageURL, title2=title2))
+		next = showsList.xpath("//a[text()='Next']/@href")
+		if next != []:
+			pageURL = "http://www.archive.org" + next[0]
+			dir.Append(Function(DirectoryItem(showList, title="Next 50 Results"), pageURL=pageURL, title2=title2))
 
 	return dir
 
