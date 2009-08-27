@@ -72,7 +72,7 @@ def artists(sender):
 		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
 	return dir
 
-def showList(sender, title2, pageURL, isArtistPage=False, identifier=None):
+def showList(sender, title2, pageURL, isArtistPage=False, identifier=None, byDate=False):
 	dir = MediaContainer(title2=title2, viewGroup='List')
 	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
 	if showsList != None:
@@ -88,18 +88,23 @@ def showList(sender, title2, pageURL, isArtistPage=False, identifier=None):
 					yearsPage = XML.ElementFromURL("http://www.archive.org/browse.php?collection=" + identifier + "&field=year", isHTML=True, errors="ignore")
 					years = yearsPage.xpath("//table[@id='browse']//ul//a/text()")
 					yearURLs = yearsPage.xpath("//table[@id='browse']//ul//a/@href")
-					Log(years)
-					Log(yearURLs)
 					for year, url in zip(years, yearURLs):
-						Log(year)
-						Log(url)
-						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url))
+						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date", byDate=True))
 					return dir
 # all this crap need else-ifying
 
 		showURLs = showsList.xpath("//a[@class='titleLink']/@href")
-		showTitles = showsList.xpath("//a[@class='titleLink']/text()")
-		for url, title in zip(showURLs, showTitles):
+		showTitles = showsList.xpath("//a[@class='titleLink']")
+		# pain in my fucking ass roundabout way to get propper show titles for artists split by date
+		titles = []
+		for i in range(len(showTitles)):
+			y = showsList.xpath("//table[@class='resultsTable']//tr[%i]/td[2]/a[1]//text()" % (i+1))
+			# the +1 is because python list indexes start from 0 and indexes in xpath start at 1
+			title = ''.join(y)
+			titles.append(title)
+		
+		for url, title in zip(showURLs, titles):				
+				
 			dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
 
 		next = showsList.xpath("//a[text()='Next']/@href")
@@ -153,7 +158,8 @@ def concert(sender, page, showName):
 	
 	#get titles
 	titles = page.xpath("//table[@id='ff2']//td[1]/text()")
-	del titles[0]
+	if titles != []:
+		del titles[0]
 	
 	#append tracks
 	for url, title in zip(urls, titles):
