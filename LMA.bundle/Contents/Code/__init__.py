@@ -47,7 +47,7 @@ def MainMenu():
 #	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows"), title2="Most Downloaded", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-downloads"))
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows Last Week",), title2="Last Week", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-week"))
-#	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
+	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
 
 	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
 	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
@@ -61,7 +61,7 @@ def MainMenu():
 
 
 def artists(sender):
-	dir = MediaContainer(title2="All Artists", viewGroup='List')
+	dir = MediaContainer(title2="All Artists", viewGroup='List', letter=None)
 	
 	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=titleSorter+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
 	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
@@ -91,7 +91,7 @@ def showList(sender, title2, pageURL, isArtistPage=False, identifier=None, byDat
 					for year, url in zip(years, yearURLs):
 						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date", byDate=True))
 					return dir
-# all this crap need else-ifying
+
 
 		showURLs = showsList.xpath("//a[@class='titleLink']/@href")
 		showTitles = showsList.xpath("//a[@class='titleLink']")
@@ -168,5 +168,15 @@ def concert(sender, page, showName):
 	
 	return dir
 
+# staff picks top level menu
+def staff(sender):
+	dir = MediaContainer(title2="Staff Picks")
+	page = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
+	titles = page.xpath("//div[@id='picks']//a//text()")
+	urls = page.xpath("//div[@id='picks']//a//@href")
+	for url, title in zip(urls, titles):
+		dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
 
 
+
+	return dir
