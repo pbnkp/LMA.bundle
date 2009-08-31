@@ -43,7 +43,7 @@ def MainMenu():
 	dir = MediaContainer(viewGroup='InfoList')
 	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
 	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
-#	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
+	dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search..."), title2="Search Results"))
 	now = datetime.datetime.now()
 	month = str(now.month)
 	day = str(now.day)
@@ -81,8 +81,13 @@ def artists(sender):
 		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
 	return dir
 
-def showList(sender, title2, pageURL, isArtistPage=False, identifier=None,):
+def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, query=None):
 	dir = MediaContainer(title2=title2, viewGroup='List')
+	if query != None:
+		query = String.URLEncode(query)
+		pageURL="http://www.archive.org/search.php?query="+query+"%20AND%20collection%3Aetree"
+	
+	
 	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
 	if showsList != None:
 
@@ -201,6 +206,5 @@ def newArtists(sender):
 		dir.Append(Function(DirectoryItem(showList, title=str(name)), title2=str(name), pageURL=pageURL, isArtistPage=True))
 	
 	return dir
-
 
 
