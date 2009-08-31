@@ -16,6 +16,7 @@
 
 
 import re, string
+import datetime
 from PMS import *
 from PMS.Objects import *
 from PMS.Shortcuts import *
@@ -34,22 +35,31 @@ def Start():
   MediaContainer.content = 'Items'
   MediaContainer.art = ''
   Prefs.Add('lossless', 'bool', 'false', L("Prefer Lossless (FLAC16, SHN)"))
-  Prefs.Add('flac24', 'bool', 'false', L("Prefer FLAC24 if available (needs pretty fast internet connecion)"))
+  Prefs.Add('flac24', 'bool', 'false', L("Prefer FLAC24 if available (needs fairly good internet connecion)"))
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
 def MainMenu():
 	dir = MediaContainer(viewGroup='InfoList')
+	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
 	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
 #	dir.Append(Function(DirectoryItem(doSearch, title="Seach the Live Music Archive",)))
-#	dir.Append(Function(DirectoryItem(today, title="Shows this Day in History",)))
+	now = datetime.datetime.now()
+	month = str(now.month)
+	day = str(now.day)
+	if now.month < 10:
+		month = '0' + month
+	if now.day < 10:
+		day = '0' + month
+	todayURL = "http://www.archive.org/search.php?query=collection:etree%20AND%20%28date:19??-"+month+"-"+day+"%20OR%20date:20??-"+month+"-"+day+"%29&sort=-/metadata/date"
+	dir.Append(Function(DirectoryItem(showList, title='Shows This Day in History'), title2="This Day in History", pageURL=todayURL))
+
 	dir.Append(Function(DirectoryItem(showList, title="Most Recently Added Shows",), title2="Recently Added Shows", pageURL="http://www.archive.org/search.php?query=collection%3Aetree&sort=-%2Fmetadata%2Fpublicdate"))
 #	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows"), title2="Most Downloaded", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-downloads"))
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows Last Week",), title2="Last Week", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-week"))
 	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
 
-	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
 	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
 	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
 	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
@@ -82,7 +92,6 @@ def showList(sender, title2, pageURL, isArtistPage=False, identifier=None, byDat
 			numShows = showsList.xpath("//div[3]//tr[2]//td[1]//b[2]//text()")
 			if numShows != []:
 				numShows = int(numShows[0].replace(",",""))
-				Log(numShows)
 				if numShows >= 51:
 					# get the years list
 					yearsPage = XML.ElementFromURL("http://www.archive.org/browse.php?collection=" + identifier + "&field=year", isHTML=True, errors="ignore")
