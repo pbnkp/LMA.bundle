@@ -64,7 +64,6 @@ def MainMenu():
 	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
 	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
 	dir.Append(PrefsItem("Preferences..."))
-#	dir.Append(Function(DirectoryItem(concert, title="test"), page="/details/eo2004-09-19_24bit", showName="test"))
 	return dir	
 
 ##################################################################################################
@@ -82,7 +81,7 @@ def artists(sender):
 		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
 	return dir
 
-def showList(sender, title2, pageURL, isArtistPage=False, identifier=None, byDate=False):
+def showList(sender, title2, pageURL, isArtistPage=False, identifier=None,):
 	dir = MediaContainer(title2=title2, viewGroup='List')
 	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
 	if showsList != None:
@@ -186,6 +185,22 @@ def staff(sender):
 	for url, title in zip(urls, titles):
 		dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
 
-
-
 	return dir
+
+
+def newArtists(sender):
+	# useless since most are empty
+	
+	dir = MediaContainer(title2="New Artists")
+	page = XML.ElementFromURL("http://www.archive.org/search.php?query=mediatype%3Acollection%20collection%3Aetree&sort=-%2Fmetadata%2Faddeddate", isHTML=True, errors="ignore")
+	names = page.xpath("//a[@class='titleLink']/text()")
+	urls = page.xpath("//a[@class='titleLink']/@href")
+	for name, url in zip(names, urls):
+		identifier = str(name).replace("/details/", "")
+		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
+		dir.Append(Function(DirectoryItem(showList, title=str(name)), title2=str(name), pageURL=pageURL, isArtistPage=True))
+	
+	return dir
+
+
+
