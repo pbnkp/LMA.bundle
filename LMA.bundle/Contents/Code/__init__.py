@@ -42,13 +42,11 @@ def Start():
 def MainMenu():
 	dir = MediaContainer(viewGroup='InfoList')
 	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
-	dir.Append(Function(DirectoryItem(artists, title="Browse Archive by Artist",)))
+	dir.Append(Function(DirectoryItem(letters, title="Browse Archive by Artist",)))
 	dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search..."), title2="Search Results"))
 	now = datetime.datetime.now()
 	month = str(now.month)
 	day = str(now.day)
-	Log(month)
-	Log(day)
 	if now.month < 10:
 		month = '0' + month
 	if now.day < 10:
@@ -69,18 +67,34 @@ def MainMenu():
 	return dir	
 
 ##################################################################################################
+def letters(sender):
+	dir = MediaContainer(title2="Artists", viewGroup='List')
+	dir.Append(Function(DirectoryItem(artists, title="#"), letter='#'))
+	for c in string.ascii_uppercase:
+		dir.Append(Function(DirectoryItem(artists, title=c), letter=c))
+	
+	return dir
+
 
 
 def artists(sender, letter=None):
-	dir = MediaContainer(title2="All Artists", viewGroup='List',)
-	
-	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
+	dir = MediaContainer(title2="Artists-" + str(letter), viewGroup='List',)
+
+	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=identifier+asc&sort[]=&sort[]=&rows=5000&fmt=xml&xmlsearch=Search#raw"
 	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
 	artists = artistsList.xpath("//str[@name='identifier']/text()")
 	for identifier in artists:
 		identifier = str(identifier)
-		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-		dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+		if letter=="#":
+			for n in string.digits:
+				if identifier[0] == n:
+					pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
+					dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+		else:
+			if identifier[0] == letter:
+				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
+				dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+
 	return dir
 
 def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, query=None):
