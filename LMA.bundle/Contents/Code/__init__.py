@@ -59,7 +59,7 @@ def MainMenu():
 	dir.Append(Function(DirectoryItem(showList, title='Shows This Day in History'), title2="This Day in History", pageURL=todayURL))
 
 	dir.Append(Function(DirectoryItem(showList, title="Most Recently Added Shows",), title2="Recently Added Shows", pageURL="http://www.archive.org/search.php?query=collection%3Aetree&sort=-%2Fmetadata%2Fpublicdate"))
-#	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",)))
+#	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",))) # useless since most are empty
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows"), title2="Most Downloaded", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-downloads"))
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows Last Week",), title2="Last Week", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-week"))
 	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
@@ -111,7 +111,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
 	if showsList != None:
 
-			#experiment to auto detect show numbers and split by year if high
+		# auto detect show numbers and split by year if high
 		if isArtistPage == True:
 			numShows = showsList.xpath("//div[3]//tr[2]//td[1]//b[2]//text()")
 			if numShows != []:
