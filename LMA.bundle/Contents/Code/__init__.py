@@ -28,12 +28,12 @@ CACHE_INTERVAL = 3600
 
 ###################################################################################################
 def Start():
-  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', '', '')
+  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', 'logp.png', 'background.png')
   Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
   Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
-  MediaContainer.art = ''
+  MediaContainer.art = R('background.png')
   Prefs.Add('lossless', 'bool', 'false', L("Prefer Lossless (FLAC16, SHN)"))
   Prefs.Add('flac24', 'bool', 'false', L("Prefer FLAC24 if available (needs fairly good internet connecion)"))
   HTTP.SetCacheTime(CACHE_INTERVAL)
@@ -47,10 +47,12 @@ def MainMenu():
 	now = datetime.datetime.now()
 	month = str(now.month)
 	day = str(now.day)
+	Log(month)
+	Log(day)
 	if now.month < 10:
 		month = '0' + month
 	if now.day < 10:
-		day = '0' + month
+		day = '0' + day
 	todayURL = "http://www.archive.org/search.php?query=collection:etree%20AND%20%28date:19??-"+month+"-"+day+"%20OR%20date:20??-"+month+"-"+day+"%29&sort=-/metadata/date"
 	dir.Append(Function(DirectoryItem(showList, title='Shows This Day in History'), title2="This Day in History", pageURL=todayURL))
 
@@ -69,10 +71,10 @@ def MainMenu():
 ##################################################################################################
 
 
-def artists(sender):
+def artists(sender, letter=None):
 	dir = MediaContainer(title2="All Artists", viewGroup='List',)
 	
-	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=titleSorter+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
+	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
 	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
 	artists = artistsList.xpath("//str[@name='identifier']/text()")
 	for identifier in artists:
