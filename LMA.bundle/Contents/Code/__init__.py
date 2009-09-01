@@ -70,7 +70,7 @@ def MainMenu():
 
 
 def artists(sender):
-	dir = MediaContainer(title2="All Artists", viewGroup='List', letter=None)
+	dir = MediaContainer(title2="All Artists", viewGroup='List',)
 	
 	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=titleSorter+asc&sort[]=&sort[]=&rows=50000&fmt=xml&xmlsearch=Search#raw"
 	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
