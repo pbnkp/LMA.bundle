@@ -34,11 +34,15 @@ def Start():
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
   MediaContainer.art = R('background.png')
-  Prefs.Add('lossless', 'bool', 'false', L("Prefer Lossless (FLAC16, SHN)"))
-  Prefs.Add('flac24', 'bool', 'false', L("Prefer FLAC24 if available (needs fairly good internet connecion)"))
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
+
+def CreatePrefs():
+  Prefs.Add(id='lossless', type='bool', default=False, label='Prefer Lossless (Flac16, SHN)')
+  Prefs.Add(id='flac24', type='bool', default=False, label='Prefer FLAC24 if Available (needs fairly good internet connection)')
+
+
 def MainMenu():
 	dir = MediaContainer(viewGroup='InfoList')
 	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
