@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# background image is from http://commons.wikimedia.org/wiki/File:Justice_in_concert.jpg
 
 import re, string
 import datetime
@@ -108,7 +109,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 		pageURL="http://www.archive.org/search.php?query="+query+"%20AND%20collection%3Aetree"
 	
 	
-	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore')
+	showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore',)
 	if showsList != None:
 
 		# auto detect show numbers and split by year if high
@@ -122,7 +123,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 					years = yearsPage.xpath("//table[@id='browse']//ul//a/text()")
 					yearURLs = yearsPage.xpath("//table[@id='browse']//ul//a/@href")
 					for year, url in zip(years, yearURLs):
-						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date", byDate=True))
+						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date",))
 					return dir
 
 
