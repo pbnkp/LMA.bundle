@@ -22,6 +22,7 @@ from PMS import *
 from PMS.Objects import *
 from PMS.Shortcuts import *
 
+
 LMA_PREFIX   = "/music/LMA"
 
 CACHE_INTERVAL = 3600
@@ -35,6 +36,7 @@ def Start():
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
   MediaContainer.art = R('background.png')
+
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
@@ -45,10 +47,10 @@ def CreatePrefs():
 
 
 def MainMenu():
-	dir = MediaContainer(viewGroup='InfoList')
+	dir = MediaContainer(viewGroup='List')
 	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
-	dir.Append(Function(DirectoryItem(letters, title="Browse Archive by Artist",)))
-	dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search..."), title2="Search Results"))
+	dir.Append(Function(DirectoryItem(letters, title="Browse Archive by Artist", thumb=R('nothing.png'))))
+	dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search...", thumb=R('nothing.png')), title2="Search Results"))
 	now = datetime.datetime.now()
 	month = str(now.month)
 	day = str(now.day)
@@ -57,26 +59,26 @@ def MainMenu():
 	if now.day < 10:
 		day = '0' + day
 	todayURL = "http://www.archive.org/search.php?query=collection:etree%20AND%20%28date:19??-"+month+"-"+day+"%20OR%20date:20??-"+month+"-"+day+"%29&sort=-/metadata/date"
-	dir.Append(Function(DirectoryItem(showList, title='Shows This Day in History'), title2="This Day in History", pageURL=todayURL))
+	dir.Append(Function(DirectoryItem(showList, title='Shows This Day in History', thumb=R('nothing.png')), title2="This Day in History", pageURL=todayURL))
 
-	dir.Append(Function(DirectoryItem(showList, title="Most Recently Added Shows",), title2="Recently Added Shows", pageURL="http://www.archive.org/search.php?query=collection%3Aetree&sort=-%2Fmetadata%2Fpublicdate"))
+	dir.Append(Function(DirectoryItem(showList, title="Most Recently Added Shows",thumb=R('nothing.png')), title2="Recently Added Shows", pageURL="http://www.archive.org/search.php?query=collection%3Aetree&sort=-%2Fmetadata%2Fpublicdate"))
 #	dir.Append(Function(DirectoryItem(newArtists, title="Recently Added Artists",))) # useless since most are empty
-	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows"), title2="Most Downloaded", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-downloads"))
-	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows Last Week",), title2="Last Week", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-week"))
-	dir.Append(Function(DirectoryItem(staff, title="Staff Picks",)))
+	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows", thumb=R('nothing.png')), title2="Most Downloaded", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-downloads"))
+	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows Last Week", thumb=R('nothing.png')), title2="Last Week", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-week"))
+	dir.Append(Function(DirectoryItem(staff, title="Staff Picks", thumb=R('nothing.png'))))
 
 	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
 	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
-	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
-	dir.Append(PrefsItem("Preferences..."))
+	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name, thumb=R('nothing.png')), page=spotlightURL, showName=name))
+	dir.Append(PrefsItem("Preferences...", thumb=R('nothing.png')))
 	return dir	
 
 ##################################################################################################
 def letters(sender):
 	dir = MediaContainer(title2="Artists", viewGroup='List')
-	dir.Append(Function(DirectoryItem(artists, title="#"), letter='#'))
+	dir.Append(Function(DirectoryItem(artists, title="#", thumb=R('nothing.png')), letter='#'))
 	for c in string.ascii_uppercase:
-		dir.Append(Function(DirectoryItem(artists, title=c), letter=c))
+		dir.Append(Function(DirectoryItem(artists, title=c, thumb=R('nothing.png')), letter=c))
 	
 	return dir
 
@@ -94,11 +96,11 @@ def artists(sender, letter=None):
 			for n in string.digits:
 				if identifier[0] == n:
 					pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-					dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+					dir.Append(Function(DirectoryItem(showList, title=identifier, thumb=R('nothing.png')), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
 		else:
 			if identifier[0] == letter:
 				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-				dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+				dir.Append(Function(DirectoryItem(showList, title=identifier, thumb=R('nothing.png')), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
 
 	return dir
 
@@ -123,7 +125,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 					years = yearsPage.xpath("//table[@id='browse']//ul//a/text()")
 					yearURLs = yearsPage.xpath("//table[@id='browse']//ul//a/@href")
 					for year, url in zip(years, yearURLs):
-						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date",))
+						dir.Append(Function(DirectoryItem(showList, title=str(year), thumb=R('nothing.png')), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date",))
 					return dir
 
 
@@ -139,12 +141,12 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 		
 		for url, title in zip(showURLs, titles):				
 				
-			dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
+			dir.Append(Function(DirectoryItem(concert, title=str(title), thumb=R('nothing.png')), page=str(url), showName=str(title)))
 
 		next = showsList.xpath("//a[text()='Next']/@href")
 		if next != []:
 			pageURL = "http://www.archive.org" + next[0]
-			dir.Append(Function(DirectoryItem(showList, title="Next 50 Results"), pageURL=pageURL, title2=title2))
+			dir.Append(Function(DirectoryItem(showList, title="Next 50 Results", thumb=R('nothing.png')), pageURL=pageURL, title2=title2))
 
 	return dir
 
@@ -209,7 +211,7 @@ def staff(sender):
 	titles = page.xpath("//div[@id='picks']//a//text()")
 	urls = page.xpath("//div[@id='picks']//a//@href")
 	for url, title in zip(urls, titles):
-		dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
+		dir.Append(Function(DirectoryItem(concert, title=str(title), thumb=R('nothing.png')), page=str(url), showName=str(title)))
 
 	return dir
 
@@ -224,7 +226,7 @@ def newArtists(sender):
 	for name, url in zip(names, urls):
 		identifier = str(name).replace("/details/", "")
 		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-		dir.Append(Function(DirectoryItem(showList, title=str(name)), title2=str(name), pageURL=pageURL, isArtistPage=True))
+		dir.Append(Function(DirectoryItem(showList, title=str(name), thumb=R('nothing.png')), title2=str(name), pageURL=pageURL, isArtistPage=True))
 	
 	return dir
 
