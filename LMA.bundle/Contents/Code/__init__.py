@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # background image is from http://commons.wikimedia.org/wiki/File:Justice_in_concert.jpg
+# icon/cover by Jay Del Turco
 
 import re, string
 import datetime
@@ -30,7 +31,7 @@ CACHE_INTERVAL = 3600
 
 ###################################################################################################
 def Start():
-  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', 'logp.png', 'background.png')
+  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', 'LMA.png', 'background.png')
   Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
   Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
   MediaContainer.title1 = 'Live Music Archive'
@@ -199,7 +200,7 @@ def concert(sender, page, showName):
 	
 	#append tracks
 	for url, title in zip(urls, titles):
-		dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album))
+		dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('LMA.png')))
 	
 	
 	return dir
