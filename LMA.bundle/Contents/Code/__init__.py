@@ -31,12 +31,12 @@ CACHE_INTERVAL = 3600
 
 ###################################################################################################
 def Start():
-  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', 'LMA.png', 'background.png')
+  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', 'icon-default.png', 'art-default.png')
   Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
   Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
-  MediaContainer.art = R('background.png')
+  MediaContainer.art = R('art-default.png')
 
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
@@ -200,7 +200,7 @@ def concert(sender, page, showName):
 	
 	#append tracks
 	for url, title in zip(urls, titles):
-		dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('LMA.png')))
+		dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('icon-default.png')))
 	
 	
 	return dir
