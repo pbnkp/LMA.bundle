@@ -38,7 +38,7 @@ def Start():
   MediaContainer.content = 'Items'
   MediaContainer.art = R('art-default.png')
   DirectoryItem.thumb=R('nothing.png')
-
+  InputDirectoryItem.thumb=R('nothing.png')
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
@@ -73,7 +73,7 @@ def MainMenu():
 #	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
 #	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name, thumb=R('nothing.png')), page=spotlightURL, showName=name))
 
-	dir.Append(Function(DirectoryItem(itunes, title="Find Shows for Artists in My iTunes Library")))
+	dir.Append(Function(DirectoryItem(itunes, title="Find Shows for Artists in my iTunes Library")))
 
 	dir.Append(PrefsItem("Preferences...", thumb=R('nothing.png')))
 	return dir	
@@ -92,20 +92,29 @@ def letters(sender):
 def artists(sender, letter=None):
 	dir = MediaContainer(title2="Artists-" + str(letter), viewGroup='List',)
 
-	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=collection&fl[]=identifier&fl[]=mediatype&sort[]=identifier+asc&sort[]=&sort[]=&rows=5000&fmt=xml&xmlsearch=Search#raw"
+	artistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=creator&fl[]=identifier&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&page=1&fmt=xml&xmlsearch=Search#raw"
 	artistsList = XML.ElementFromURL(artistsURL, errors='ignore',)
-	artists = artistsList.xpath("//str[@name='identifier']/text()")
-	for identifier in artists:
-		identifier = str(identifier)
+	results = artistsList.xpath("/response//doc")
+	for n in range(len(results)):
+		identifier = artistsList.xpath("//doc[%i]/str[@name='identifier']/text()"  % (n+1))
+		name = artistsList.xpath("//doc[%i]/arr[@name='creator']/str/text()"  % (n+1))
+		if identifier != []:
+			identifier = str(identifier[0])
+		else:
+			continue
+		if name != []:
+			name = str(name[0])
+		else:
+			continue
 		if letter=="#":
 			for n in string.digits:
 				if identifier[0] == n:
 					pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-					dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+					dir.Append(Function(DirectoryItem(showList, title=name), pageURL=pageURL, title2=name, isArtistPage=True, identifier=identifier))
 		else:
 			if identifier[0] == letter:
 				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-				dir.Append(Function(DirectoryItem(showList, title=identifier), pageURL=pageURL, title2=identifier, isArtistPage=True, identifier=identifier))
+				dir.Append(Function(DirectoryItem(showList, title=name), pageURL=pageURL, title2=name, isArtistPage=True, identifier=identifier))
 
 	return dir
 
@@ -241,6 +250,10 @@ def itunes(sender):
 	itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
 	itunesArtists = itunesArtistsPage.xpath('//Artist/@artist')
 	Log(itunesArtists)
+	
+	
+	
+	
 	
 	return dir
 
