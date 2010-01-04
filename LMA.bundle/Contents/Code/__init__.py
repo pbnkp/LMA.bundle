@@ -37,15 +37,16 @@ def Start():
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
   MediaContainer.art = R('art-default.png')
+  DirectoryItem.thumb=R('nothing.png')
 
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
 
 def CreatePrefs():
-  Prefs.Add(id='lossless', type='bool', default=False, label='Prefer Lossless (Flac16, SHN)')
+  Prefs.Add(id='lossless', type='bool', default=True, label='Prefer Lossless (Flac16, SHN)')
   Prefs.Add(id='flac24', type='bool', default=False, label='Prefer FLAC24 if Available (needs fairly good internet connection)')
-
+  Prefs.Add(id='itunesIP', type='text',default='127.0.0.1', label='IP address of iTunes library')
 
 def MainMenu():
 	dir = MediaContainer(viewGroup='List')
@@ -68,9 +69,12 @@ def MainMenu():
 	dir.Append(Function(DirectoryItem(showList, title="Most Downloaded Shows Last Week", thumb=R('nothing.png')), title2="Last Week", pageURL="http://www.archive.org/search.php?query=%28%28collection%3Aetree%20OR%20mediatype%3Aetree%29%20AND%20NOT%20collection%3AGratefulDead%29%20AND%20-mediatype%3Acollection&sort=-week"))
 	dir.Append(Function(DirectoryItem(staff, title="Staff Picks", thumb=R('nothing.png'))))
 
-	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
-	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
-	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name, thumb=R('nothing.png')), page=spotlightURL, showName=name))
+#	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
+#	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
+#	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name, thumb=R('nothing.png')), page=spotlightURL, showName=name))
+
+	dir.Append(Function(DirectoryItem(itunes, title="Find Shows for Artists in My iTunes Library")))
+
 	dir.Append(PrefsItem("Preferences...", thumb=R('nothing.png')))
 	return dir	
 
@@ -228,6 +232,15 @@ def newArtists(sender):
 		identifier = str(name).replace("/details/", "")
 		pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
 		dir.Append(Function(DirectoryItem(showList, title=str(name), thumb=R('nothing.png')), title2=str(name), pageURL=pageURL, isArtistPage=True))
+	
+	return dir
+
+def itunes(sender):
+	dir = MediaContainer(title2="itunes", title3="title3")
+	itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
+	itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
+	itunesArtists = itunesArtistsPage.xpath('//Artist/@artist')
+	Log(itunesArtists)
 	
 	return dir
 
