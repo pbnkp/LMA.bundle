@@ -246,7 +246,7 @@ def newArtists(sender):
 
 
 def itunes(sender):
-# fuzzy matching way way way way way too slow (estimate 15 minutes for my library), cant verify it works, exact matches only till plex framework can do the matching
+# fuzzy matching way way way way way too slow (estimate 15 minutes for my library), cant even verify it works. exact matches only till plex framework can do the matching
 	
 	dir = MediaContainer(title2="itunes", title3="title3")
 	itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
@@ -269,11 +269,12 @@ def itunes(sender):
 			continue
 		
 		
-		strippedLMAname = LMAname.lower().replace(" ", "")
+		strippedLMAname = LMAname.lower().replace(" ", "").translate(string.maketrans("",""), string.punctuation)
 		
 		
 		for itunesArtist in itunesArtists:
-			itunesArtist = str(itunesArtist).lower().replace(" ", "")
+			itunesArtist = str(itunesArtist).lower().replace(" ", "").translate(string.maketrans("",""), string.punctuation)
+			
 		
 #			distance = levenshtein_distance(strippedLMAname, itunesArtist)
 #			error_metric = float(distance) / max(len(strippedLMAname), len(itunesArtist))
