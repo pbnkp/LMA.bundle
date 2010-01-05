@@ -244,17 +244,46 @@ def newArtists(sender):
 	
 	return dir
 
+
 def itunes(sender):
+# fuzzy matching way way way way way too slow (estimate 15 minutes for my library), cant verify it works, exact matches only till plex framework can do the matching
+	
 	dir = MediaContainer(title2="itunes", title3="title3")
 	itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
 	itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
 	itunesArtists = itunesArtistsPage.xpath('//Artist/@artist')
-	Log(itunesArtists)
 	
-	
-	
-	
-	
+	LMAartistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=creator&fl[]=identifier&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&page=1&fmt=xml&xmlsearch=Search#raw"
+	LMAartistsList = XML.ElementFromURL(LMAartistsURL, errors='ignore',)
+	results = LMAartistsList.xpath("/response//doc")
+	for n in range(len(results)):
+		identifier = LMAartistsList.xpath("//doc[%i]/str[@name='identifier']/text()"  % (n+1))
+		LMAname = LMAartistsList.xpath("//doc[%i]/arr[@name='creator']/str/text()"  % (n+1))
+		if identifier != []:
+			identifier = str(identifier[0])
+		else:
+			continue
+		if LMAname != []:
+			LMAname = str(LMAname[0])
+		else:
+			continue
+		
+		
+		strippedLMAname = LMAname.lower().replace(" ", "")
+		
+		
+		for itunesArtist in itunesArtists:
+			itunesArtist = str(itunesArtist).lower().replace(" ", "")
+		
+#			distance = levenshtein_distance(strippedLMAname, itunesArtist)
+#			error_metric = float(distance) / max(len(strippedLMAname), len(itunesArtist))
+		
+#			if error_metric <= 0.1:
+			if strippedLMAname == itunesArtist:
+				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
+				dir.Append(Function(DirectoryItem(showList, title=LMAname), pageURL=pageURL, title2=LMAname, isArtistPage=True, identifier=identifier))
+		
+		
 	return dir
 
 
