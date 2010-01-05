@@ -50,7 +50,7 @@ def CreatePrefs():
 
 def MainMenu():
 	dir = MediaContainer(viewGroup='List')
-	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
+#	mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
 	dir.Append(Function(DirectoryItem(letters, title="Browse Archive by Artist")))
 	dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search..."), title2="Search Results"))
 	now = datetime.datetime.now()
@@ -273,11 +273,11 @@ def itunes(sender):
 			continue
 		
 		
-		strippedLMAname = LMAname.lower().replace(" ", "").translate(string.maketrans("",""), string.punctuation)
+		strippedLMAname = LMAname.lower().replace(" and ", "").replace("the ", "").replace(" ", "").translate(string.maketrans("",""), string.punctuation)
 		
 		
 		for itunesArtist in itunesArtists:
-			itunesArtist = str(itunesArtist).lower().replace(" ", "").translate(string.maketrans("",""), string.punctuation)
+			itunesArtist = str(itunesArtist).lower().replace(" and ", "").replace("the ", "").replace(" ", "").translate(string.maketrans("",""), string.punctuation)
 			
 		
 #			distance = levenshtein_distance(strippedLMAname, itunesArtist)
