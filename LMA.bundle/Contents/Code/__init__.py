@@ -251,6 +251,8 @@ def itunes(sender):
 	dir = MediaContainer(title2="itunes", title3="title3")
 	itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
 	itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
+	if itunesArtistsPage == None:
+		return MessageContainer(header="No Itunes Found",  message="no pms instance with a valid itunes library at this address\n(default: localhost) Plese go the the plugin's prefrences and set \nthe ip address of a pms instance sharing an itunes library")
 	itunesArtists = itunesArtistsPage.xpath('//Artist/@artist')
 	
 	LMAartistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=creator&fl[]=identifier&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&page=1&fmt=xml&xmlsearch=Search#raw"
