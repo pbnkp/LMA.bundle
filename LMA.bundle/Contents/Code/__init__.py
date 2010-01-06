@@ -288,7 +288,6 @@ def itunes(sender):
 		if strippedLMAname in itunesDict:
 				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
 				thumb = "http://" + Prefs.Get('itunesIP') + ":32400" +  itunesDict[strippedLMAname]
-				Log(thumb)
 				
 				dir.Append(Function(DirectoryItem(showList, title=LMAname, thumb = thumb), pageURL=pageURL, title2=LMAname, isArtistPage=True, identifier=identifier, thumbs=thumb))
 		
