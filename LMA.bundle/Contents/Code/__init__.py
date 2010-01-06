@@ -19,7 +19,6 @@
 
 import re, string
 import datetime
-import time
 from PMS import *
 from PMS.Objects import *
 from PMS.Shortcuts import *
@@ -121,8 +120,10 @@ def artists(sender, letter=None):
 
 	return dir
 
-def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, query=None):
+def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, query=None, thumbs=None):
 	dir = MediaContainer(title2=title2, viewGroup='List')
+	if thumbs == None:
+		thumbs = R('icon-default.png')
 	if query != None:
 		query = String.URLEncode(query)
 		pageURL="http://www.archive.org/search.php?query="+query+"%20AND%20collection%3Aetree"
@@ -142,7 +143,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 					years = yearsPage.xpath("//table[@id='browse']//ul//a/text()")
 					yearURLs = yearsPage.xpath("//table[@id='browse']//ul//a/@href")
 					for year, url in zip(years, yearURLs):
-						dir.Append(Function(DirectoryItem(showList, title=str(year)), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date",))
+						dir.Append(Function(DirectoryItem(showList, title=str(year), thumb=thumbs), title2=str(year), pageURL="http://www.archive.org" + url + "&sort=date",))
 					return dir
 
 
@@ -158,7 +159,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 		
 		for url, title in zip(showURLs, titles):				
 				
-			dir.Append(Function(DirectoryItem(concert, title=str(title)), page=str(url), showName=str(title)))
+			dir.Append(Function(DirectoryItem(concert, title=str(title), thumb=thumbs), page=str(url), showName=str(title)))
 
 		next = showsList.xpath("//a[text()='Next']/@href")
 		if next != []:
@@ -257,16 +258,16 @@ def itunes(sender):
 	if itunesArtistsPage == None:
 		return MessageContainer(header="No Itunes Found",  message="no pms instance with a valid itunes library at this address\n(default: localhost) Plese go the the plugin's prefrences and set \nthe ip address of a pms instance sharing an itunes library")
 	itunesArtists = itunesArtistsPage.xpath('//Artist/@artist')
+	itunesThumbs = itunesArtistsPage.xpath('//Artist/@thumb')
 	
 	LMAartistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=creator&fl[]=identifier&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&page=1&fmt=xml&xmlsearch=Search#raw"
 	LMAartistsList = XML.ElementFromURL(LMAartistsURL, errors='ignore',)
 	results = LMAartistsList.xpath("/response//doc")
 	
-	x = time.time()
 	itunesDict = {}
-	for itunesArtist in itunesArtists:
+	for itunesArtist, itunesThumb in zip(itunesArtists, itunesThumbs):
 		itunesArtist = str(itunesArtist).lower().replace(" and ", "").replace("the ", "").replace(" ", "").translate(string.maketrans("",""), string.punctuation)
-		itunesDict[itunesArtist] = True
+		itunesDict[itunesArtist] = itunesThumb
 	
 	for n in range(len(results)):
 		identifier = LMAartistsList.xpath("//doc[%i]/str[@name='identifier']/text()"  % (n+1))
@@ -286,10 +287,11 @@ def itunes(sender):
 		
 		if strippedLMAname in itunesDict:
 				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-				dir.Append(Function(DirectoryItem(showList, title=LMAname), pageURL=pageURL, title2=LMAname, isArtistPage=True, identifier=identifier))
+				thumb = "http://" + Prefs.Get('itunesIP') + ":32400" +  itunesDict[strippedLMAname]
+				Log(thumb)
+				
+				dir.Append(Function(DirectoryItem(showList, title=LMAname, thumb = thumb), pageURL=pageURL, title2=LMAname, isArtistPage=True, identifier=identifier, thumbs=thumb))
 		
-		
-	Log(time.time() - x)	
 	return dir
 
 
