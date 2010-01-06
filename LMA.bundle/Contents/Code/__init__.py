@@ -37,8 +37,8 @@ def Start():
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
   MediaContainer.art = R('art-default.png')
-  DirectoryItem.thumb=R('nothing.png')
-  InputDirectoryItem.thumb=R('nothing.png')
+  DirectoryItem.thumb=R('icon-default.png')
+  InputDirectoryItem.thumb=R('icon-default.png')
   HTTP.SetCacheTime(CACHE_INTERVAL)
 
 ###################################################################################################
@@ -71,13 +71,13 @@ def MainMenu():
 
 #	spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
 #	name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
-#	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name, thumb=R('nothing.png')), page=spotlightURL, showName=name))
+#	dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
 	itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
 	itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
 	if itunesArtistsPage != None:
 		dir.Append(Function(DirectoryItem(itunes, title="Find Shows for Artists in my iTunes Library")))
 
-	dir.Append(PrefsItem("Preferences...", thumb=R('nothing.png')))
+	dir.Append(PrefsItem("Preferences...", thumb=S('Gear.png')))
 	return dir	
 
 ##################################################################################################
