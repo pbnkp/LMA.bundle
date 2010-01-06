@@ -19,6 +19,7 @@
 
 import re, string
 import datetime
+import time
 from PMS import *
 from PMS.Objects import *
 from PMS.Shortcuts import *
@@ -260,6 +261,13 @@ def itunes(sender):
 	LMAartistsURL = "http://www.archive.org/advancedsearch.php?q=mediatype%3Acollection+collection%3Aetree&fl[]=creator&fl[]=identifier&sort[]=identifier+asc&sort[]=&sort[]=&rows=50000&page=1&fmt=xml&xmlsearch=Search#raw"
 	LMAartistsList = XML.ElementFromURL(LMAartistsURL, errors='ignore',)
 	results = LMAartistsList.xpath("/response//doc")
+	
+	x = time.time()
+	itunesDict = {}
+	for itunesArtist in itunesArtists:
+		itunesArtist = str(itunesArtist).lower().replace(" and ", "").replace("the ", "").replace(" ", "").translate(string.maketrans("",""), string.punctuation)
+		itunesDict[itunesArtist] = True
+	
 	for n in range(len(results)):
 		identifier = LMAartistsList.xpath("//doc[%i]/str[@name='identifier']/text()"  % (n+1))
 		LMAname = LMAartistsList.xpath("//doc[%i]/arr[@name='creator']/str/text()"  % (n+1))
@@ -276,19 +284,12 @@ def itunes(sender):
 		strippedLMAname = LMAname.lower().replace(" and ", "").replace("the ", "").replace(" ", "").translate(string.maketrans("",""), string.punctuation)
 		
 		
-		for itunesArtist in itunesArtists:
-			itunesArtist = str(itunesArtist).lower().replace(" and ", "").replace("the ", "").replace(" ", "").translate(string.maketrans("",""), string.punctuation)
-			
-		
-#			distance = levenshtein_distance(strippedLMAname, itunesArtist)
-#			error_metric = float(distance) / max(len(strippedLMAname), len(itunesArtist))
-		
-#			if error_metric <= 0.1:
-			if strippedLMAname == itunesArtist:
+		if strippedLMAname in itunesDict:
 				pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
 				dir.Append(Function(DirectoryItem(showList, title=LMAname), pageURL=pageURL, title2=LMAname, isArtistPage=True, identifier=identifier))
 		
 		
+	Log(time.time() - x)	
 	return dir
 
 
