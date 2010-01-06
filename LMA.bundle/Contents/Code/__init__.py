@@ -252,7 +252,7 @@ def newArtists(sender):
 def itunes(sender):
 # fuzzy matching way way way way way too slow (estimate 15 minutes for my library), cant even verify it works. exact matches only till plex framework can do the matching
 	
-	dir = MediaContainer(title2="itunes", title3="title3")
+	dir = MediaContainer(title2="iTunes")
 	itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
 	itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
 	if itunesArtistsPage == None:
