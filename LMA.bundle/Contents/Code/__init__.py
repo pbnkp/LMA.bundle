@@ -17,11 +17,9 @@
 # background image is from http://commons.wikimedia.org/wiki/File:Justice_in_concert.jpg
 # icon/cover by Jay Del Turco
 
-import re, string
+import string
 import datetime
 from PMS import *
-from PMS.Objects import *
-from PMS.Shortcuts import *
 
 
 LMA_PREFIX   = "/music/LMA"
