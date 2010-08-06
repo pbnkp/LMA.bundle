@@ -217,7 +217,7 @@ def concert(sender, page, showName):
 	
 	#append tracks
 	for url, title in zip(urls, titles):
-		dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('icon-default.png')))
+		dir.Append(TrackItem("http://www.archive.org" + url, title=title.strip(), artist=artist.strip(), album=album.strip(), thumb=R('icon-default.png')))
 	
 	
 	return dir
