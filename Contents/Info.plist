@@ -17,7 +17,9 @@
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>PlexAudioCodec</key>
-	<string>MP3</string>
+	<array>
+		<string>MP3</string>
+	</array>
 	<key>PlexClientPlatforms</key>
 	<string>MacOSX,iOS</string>
 	<key>PlexFrameworkVersion</key>
