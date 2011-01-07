@@ -218,9 +218,9 @@ def concert(sender, page, showName):
   #append tracks
   if urls != []:
     for url, title in zip(urls, titles):
-      dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('icon-default.png')))
+      dir.Append(TrackItem("http://www.archive.org" + url, title=title.strip(), artist=artist, album=album, thumb=R('icon-default.png')))
   
-  # m3u stream fallback for gratefull dead soundboards
+  # m3u stream fallback for grateful dead soundboards
   else:
     try:
       m3u = page.xpath("//p[@class='content']/a[text()='VBR M3U']/@href")[0]
