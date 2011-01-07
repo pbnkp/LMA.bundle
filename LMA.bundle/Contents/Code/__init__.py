@@ -229,10 +229,13 @@ def concert(sender, page, showName):
   # m3u stream fallback for grateful dead soundboards
   else:
     try:
-      m3u = page.xpath("//p[@class='content']/a[text()='VBR M3U']/@href")[0]
+      m3u = page.xpath("//a[text()='VBR M3U']/@href")[0]
+      if m3u[0] is not 'h': m3u = 'http://www.archive.org/' + m3u
       m3u = HTTP.Request(m3u).strip().splitlines()
+      Log('using m3u')
       for url in m3u:
         dir.Append(TrackItem(url, title="Track %i" % (m3u.index(url)+1), artist=artist, album=album, thumb=R('icon-default.png')))
+        
     except: Log('nothing found')
   return dir
 
