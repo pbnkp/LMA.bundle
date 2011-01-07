@@ -174,10 +174,10 @@ def concert(sender, page, showName):
   dir = MediaContainer(title2=showName)
   page = XML.ElementFromURL("http://www.archive.org" + page, isHTML=True, errors="ignore")
   artist = str(page.xpath("/html/body/div[3]/a[3]/text()")).strip("[]'")
-  album = str(page.xpath("/html/body/div[5]/div/p[1]/span[6]/text()")).strip("[]'")
+  album = str(page.xpath("//span[text()='Date:']/following-sibling::*[1]/text()")).strip("[]'")
   urls = []
   
-  #get mp3
+  #get mp3s
   media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='VBR MP3']")
   if media_type != []:
     i = len(media_type[0].xpath('preceding-sibling::*')) 
@@ -216,10 +216,18 @@ def concert(sender, page, showName):
     del titles[0]
   
   #append tracks
-  for url, title in zip(urls, titles):
-    dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('icon-default.png')))
+  if urls != []:
+    for url, title in zip(urls, titles):
+      dir.Append(TrackItem("http://www.archive.org" + url, title=title, artist=artist, album=album, thumb=R('icon-default.png')))
   
-  
+  # m3u stream fallback for gratefull dead soundboards
+  else:
+    try:
+      m3u = page.xpath("//p[@class='content']/a[text()='VBR M3U']/@href")[0]
+      m3u = HTTP.Request(m3u).strip().splitlines()
+      for url in m3u:
+        dir.Append(TrackItem(url, title="Track %i" % (m3u.index(url)+1), artist=artist, album=album, thumb=R('icon-default.png')))
+    except: Log('nothing found')
   return dir
 
 # staff picks top level menu
