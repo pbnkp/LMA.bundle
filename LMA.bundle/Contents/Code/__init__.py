@@ -42,7 +42,7 @@ def Start():
 ###################################################################################################
 
 def CreatePrefs():
-  Prefs.Add(id='lossless', type='bool', default=True, label='Prefer Lossless (Flac16, SHN)')
+  Prefs.Add(id='lossless', type='bool', default=True, label='Enable Lossless (Flac16, SHN)')
   Prefs.Add(id='flac24', type='bool', default=False, label='Prefer FLAC24 if Available (needs fairly good internet connection)')
   Prefs.Add(id='itunesIP', type='text',default='127.0.0.1', label='IP address of iTunes library')
 
@@ -158,8 +158,14 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
       titles.append(title)
     
     for url, title in zip(showURLs, titles):        
-        
-      dir.Append(Function(DirectoryItem(concert, title=str(title), thumb=thumbs), page=str(url), showName=str(title)))
+      
+      # for artists in the search results
+      if showsList.xpath("//a[@class='titleLink'][@href='%s']/parent::td/preceding-sibling::td/img[@alt='[collection]']" %url):
+        pageURL= "http://www.archive.org/search.php?query=collection%3A" + url.replace("/details/","") + "&sort=-date&page=1"
+        dir.Append(Function(DirectoryItem(showList, title=title), pageURL=pageURL, title2=title, isArtistPage=True, identifier=url.replace("/details/","")))
+
+      else:
+        dir.Append(Function(DirectoryItem(concert, title=str(title), thumb=thumbs), page=str(url), showName=str(title)))
 
     next = showsList.xpath("//a[text()='Next']/@href")
     if next != []:
