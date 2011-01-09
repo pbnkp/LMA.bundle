@@ -59,7 +59,6 @@ def MainMenu():
   if now.day < 10:
     day = '0' + day
   todayURL = "http://www.archive.org/search.php?query=collection:etree%20AND%20%28date:19??-"+month+"-"+day+"%20OR%20date:20??-"+month+"-"+day+"%29&sort=-/metadata/date"
-  Log(str(todayURL))
   dir.Append(Function(DirectoryItem(showList, title='Shows This Day in History'), title2="This Day in History", pageURL=todayURL))
 
   dir.Append(Function(DirectoryItem(showList, title="Most Recently Added Shows"), title2="Recently Added Shows", pageURL="http://www.archive.org/search.php?query=collection%3Aetree&sort=-%2Fmetadata%2Fpublicdate"))
@@ -120,7 +119,6 @@ def artists(sender, letter=None):
   return dir
 
 def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, query=None, thumbs=None):
-  Log(str(pageURL))
   dir = MediaContainer(title2=title2, viewGroup='List')
   if thumbs == None:
     thumbs = R('icon-default.png')
