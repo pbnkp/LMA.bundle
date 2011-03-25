@@ -19,36 +19,24 @@
 
 import string
 import datetime
-from PMS import *
-
-
-LMA_PREFIX   = "/music/LMA"
-
-CACHE_INTERVAL = 3600
-
 
 ###################################################################################################
 def Start():
-  Plugin.AddPrefixHandler(LMA_PREFIX, MainMenu, 'Live Music Archive', 'icon-default.png', 'art-default.png')
+  Plugin.AddPrefixHandler('/music/LMA', MainMenu, 'Live Music Archive', 'icon-default.png', 'art-default.jpg')
   Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
   Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
   MediaContainer.title1 = 'Live Music Archive'
   MediaContainer.content = 'Items'
-  MediaContainer.art = R('art-default.png')
+  MediaContainer.art = R('art-default.jpg')
   DirectoryItem.thumb=R('icon-default.png')
   InputDirectoryItem.thumb=R('icon-default.png')
-  HTTP.SetCacheTime(CACHE_INTERVAL)
+  HTTP.CacheTime = CACHE_1HOUR
 
 ###################################################################################################
 
-def CreatePrefs():
-  Prefs.Add(id='lossless', type='bool', default=True, label='Enable Lossless (Flac16, SHN)')
-  Prefs.Add(id='flac24', type='bool', default=False, label='Prefer FLAC24 if Available (needs fairly good internet connection)')
-  Prefs.Add(id='itunesIP', type='text',default='127.0.0.1', label='IP address of iTunes library')
-
 def MainMenu():
   dir = MediaContainer(viewGroup='List')
-#  mainPage = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
+#  mainPage = HTML.ElementFromURL("http://www.archive.org/details/etree", errors="ignore")
   dir.Append(Function(DirectoryItem(letters, title="Browse Archive by Artist")))
   dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search..."), title2="Search Results"))
   now = datetime.datetime.now()
@@ -70,7 +58,7 @@ def MainMenu():
 #  spotlightURL = str(mainPage.xpath("//div[@id='spotlight']/a/@href")).strip("[]'")
 #  name = str(mainPage.xpath("//div[@id='spotlight']/a/text()")).strip("[]'")
 #  dir.Append(Function(DirectoryItem(concert, title="Spotlight Show", summary=name), page=spotlightURL, showName=name))
-  itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
+  itunesURL = "http://" + Prefs['itunesIP'] + ":32400/music/iTunes/Artists"
   itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
   if itunesArtistsPage != None:
     dir.Append(Function(DirectoryItem(itunes, title="Find Shows for Artists in my iTunes Library")))
@@ -82,9 +70,9 @@ def MainMenu():
 def letters(sender):
   dir = MediaContainer(title2="Artists", viewGroup='List')
   dir.Append(Function(DirectoryItem(artists, title="#"), letter='#'))
-  for c in string.ascii_uppercase:
+  for c in list(string.ascii_uppercase):
     dir.Append(Function(DirectoryItem(artists, title=c,), letter=c))
-  
+
   return dir
 
 
@@ -127,7 +115,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
     pageURL="http://www.archive.org/search.php?query="+query+"%20AND%20collection%3Aetree"
   
   
-  showsList = XML.ElementFromURL(pageURL, isHTML=True, errors='ignore',)
+  showsList = HTML.ElementFromURL(pageURL, errors='ignore')
   if showsList != None:
 
     # auto detect show numbers and split by year if high
@@ -137,7 +125,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
         numShows = int(numShows[0].replace(",",""))
         if numShows >= 51:
           # get the years list
-          yearsPage = XML.ElementFromURL("http://www.archive.org/browse.php?collection=" + identifier + "&field=year", isHTML=True, errors="ignore")
+          yearsPage = HTML.ElementFromURL("http://www.archive.org/browse.php?collection=" + identifier + "&field=year", errors="ignore")
           years = yearsPage.xpath("//table[@id='browse']//ul//a/text()")
           yearURLs = yearsPage.xpath("//table[@id='browse']//ul//a/@href")
           for year, url in zip(years, yearURLs):
@@ -176,7 +164,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 
 def concert(sender, page, showName):
   dir = MediaContainer(title2=showName)
-  page = XML.ElementFromURL("http://www.archive.org" + page, isHTML=True, errors="ignore")
+  page = HTML.ElementFromURL("http://www.archive.org" + page, errors="ignore")
   artist = str(page.xpath("/html/body/div[3]/a[3]/text()")).strip("[]'")
   album = str(page.xpath("//span[text()='Date:']/following-sibling::*[1]/text()")).strip("[]'")
   urls = []
@@ -190,7 +178,7 @@ def concert(sender, page, showName):
   
   
   #get flac16, shn
-  if Prefs.Get('lossless') == True:
+  if Prefs['lossless'] == True:
     media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='Flac']")
     Log("looking for Flac")
     if media_type != []:
@@ -206,7 +194,7 @@ def concert(sender, page, showName):
         Log("found shn")
 
   #Get FLAC24
-  if Prefs.Get('flac24') == True:
+  if Prefs['flac24'] == True:
     media_type = page.xpath("//table[@id='ff2']//tr[1]//td[text()='24bit Flac']")
     Log("looking for Flac24")
     if media_type != []:
@@ -229,7 +217,7 @@ def concert(sender, page, showName):
     try:
       m3u = page.xpath("//a[text()='VBR M3U']/@href")[0]
       if m3u[0] is not 'h': m3u = 'http://www.archive.org/' + m3u
-      m3u = HTTP.Request(m3u).strip().splitlines()
+      m3u = HTTP.Request(m3u).content.strip().splitlines()
       Log('using m3u')
       for url in m3u:
         dir.Append(TrackItem(url, title="Track %i" % (m3u.index(url)+1), artist=artist, album=album, thumb=R('icon-default.png')))
@@ -240,7 +228,7 @@ def concert(sender, page, showName):
 # staff picks top level menu
 def staff(sender):
   dir = MediaContainer(title2="Staff Picks")
-  page = XML.ElementFromURL("http://www.archive.org/details/etree", isHTML=True, errors="ignore")
+  page = HTML.ElementFromURL("http://www.archive.org/details/etree", errors="ignore")
   titles = page.xpath("//div[@id='picks']//a//text()")
   urls = page.xpath("//div[@id='picks']//a//@href")
   for url, title in zip(urls, titles):
@@ -253,7 +241,7 @@ def newArtists(sender):
   # useless since most are empty
   
   dir = MediaContainer(title2="New Artists")
-  page = XML.ElementFromURL("http://www.archive.org/search.php?query=mediatype%3Acollection%20collection%3Aetree&sort=-%2Fmetadata%2Faddeddate", isHTML=True, errors="ignore")
+  page = HTML.ElementFromURL("http://www.archive.org/search.php?query=mediatype%3Acollection%20collection%3Aetree&sort=-%2Fmetadata%2Faddeddate", errors="ignore")
   names = page.xpath("//a[@class='titleLink']/text()")
   urls = page.xpath("//a[@class='titleLink']/@href")
   for name, url in zip(names, urls):
@@ -268,7 +256,7 @@ def itunes(sender):
 # fuzzy matching way way way way way too slow (estimate 15 minutes for my library), cant even verify it works. exact matches only till plex framework can do the matching
   
   dir = MediaContainer(title2="iTunes")
-  itunesURL = "http://" + Prefs.Get('itunesIP') + ":32400/music/iTunes/Artists"
+  itunesURL = "http://" + Prefs['itunesIP'] + ":32400/music/iTunes/Artists"
   itunesArtistsPage = XML.ElementFromURL(itunesURL, errors='ignore')
   if itunesArtistsPage == None:
     return MessageContainer(header="No Itunes Found",  message="no pms instance with a valid itunes library at this address\n(default: localhost) Plese go the the plugin's prefrences and set \nthe ip address of a pms instance sharing an itunes library")
@@ -302,7 +290,7 @@ def itunes(sender):
     
     if strippedLMAname in itunesDict:
         pageURL= "http://www.archive.org/search.php?query=collection%3A" + identifier + "&sort=-date&page=1"
-        thumb = "http://" + Prefs.Get('itunesIP') + ":32400" +  itunesDict[strippedLMAname]
+        thumb = "http://" + Prefs['itunesIP'] + ":32400" +  itunesDict[strippedLMAname]
         
         dir.Append(Function(DirectoryItem(showList, title=LMAname, thumb = thumb), pageURL=pageURL, title2=LMAname, isArtistPage=True, identifier=identifier, thumbs=thumb))
     

@@ -1,0 +1,20 @@
+[
+  {
+    "id":"lossless",
+    "label":"Enable Lossless (Flac16, SHN)",
+    "type":"bool",
+    "default":"True"
+  },
+  {
+    "id":"flac24",
+    "label":"Prefer FLAC24 if Available (needs fairly good internet connection)",
+    "type":"bool",
+    "default":"False"
+  },
+  {
+    "id":"itunesIP",
+    "label":"IP address of iTunes library",
+    "type":"text",
+    "default":"127.0.0.1"
+  }
+]
