@@ -165,7 +165,7 @@ def showList(sender, title2, pageURL=None, isArtistPage=False, identifier=None, 
 def concert(sender, page, showName):
   dir = MediaContainer(title2=showName)
   page = HTML.ElementFromURL("http://www.archive.org" + page, errors="ignore")
-  artist = str(page.xpath("/html/body/div[3]/a[3]/text()")).strip("[]'")
+  artist = str(page.xpath("/div[3]/a[3]/text()")).strip("[]'")
   album = str(page.xpath("//span[text()='Date:']/following-sibling::*[1]/text()")).strip("[]'")
   urls = []
   
