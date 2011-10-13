@@ -38,7 +38,7 @@ def MainMenu():
   dir = MediaContainer(viewGroup='List')
 #  mainPage = HTML.ElementFromURL("http://www.archive.org/details/etree", errors="ignore")
   dir.Append(Function(DirectoryItem(letters, title="Browse Archive by Artist")))
-  dir.Append(Function(InputDirectoryItem(showList, title="Seach the Live Music Archive", prompt="Search..."), title2="Search Results"))
+  dir.Append(Function(InputDirectoryItem(showList, title="Search the Live Music Archive", prompt="Search..."), title2="Search Results"))
   now = datetime.datetime.now()
   month = str(now.month)
   day = str(now.day)
